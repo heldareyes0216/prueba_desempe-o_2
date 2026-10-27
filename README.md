@@ -2,8 +2,6 @@
 
 This repository contains an automated ETL pipeline built with Apache Airflow, Docker, and PostgreSQL. It extracts e-commerce transaction data, applies business rules and data quality transformations, and loads the cleaned data into an analytical Star Schema Data Warehouse.
 
-## Data Model Diagram
-View the database schema diagram here: [Insert your dbdiagram.io link here]
 
 ## Quick Start Guide (Run in < 10 mins)
 
@@ -12,7 +10,7 @@ View the database schema diagram here: [Insert your dbdiagram.io link here]
 * Git installed.
 
 ### 2. Clone the Repository
-git clone <your-repository-url>
+git clone <https://github.com/heldareyes0216/prueba_desempe-o_2.git>
 cd prueba_desempeño_2
 
 ### 3. Environment setup

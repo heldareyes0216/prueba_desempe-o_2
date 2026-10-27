@@ -1,10 +1,9 @@
 
 CREATE TABLE IF NOT EXISTS dim_products (
-    product_code VARCHAR(50) PRIMARY KEY,
+    stock_code VARCHAR(50) PRIMARY KEY, 
     product_name VARCHAR(255) NOT NULL,
     category VARCHAR(50) NOT NULL
 );
-
 CREATE TABLE IF NOT EXISTS dim_customers (
     customer_id VARCHAR(50) PRIMARY KEY,
     country VARCHAR(100)

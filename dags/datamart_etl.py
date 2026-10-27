@@ -235,7 +235,7 @@ def datamart_etl_pipeline():
         return output_files
 
 
-    # TASK 2: LOAD DATA WAREHOUSE
+    
     # TASK 2: LOAD DATA WAREHOUSE
     @task()
     def load_dwh(output_files):
