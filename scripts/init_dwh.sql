@@ -1,9 +1,9 @@
-
 CREATE TABLE IF NOT EXISTS dim_products (
-    stock_code VARCHAR(50) PRIMARY KEY, 
-    product_name VARCHAR(255) NOT NULL,
-    category VARCHAR(50) NOT NULL
+    stock_code VARCHAR(50) PRIMARY KEY,
+    description VARCHAR(255),
+    avg_unit_price NUMERIC
 );
+
 CREATE TABLE IF NOT EXISTS dim_customers (
     customer_id VARCHAR(50) PRIMARY KEY,
     country VARCHAR(100)
@@ -12,8 +12,8 @@ CREATE TABLE IF NOT EXISTS dim_customers (
 CREATE TABLE IF NOT EXISTS fact_sales (
     transaction_id SERIAL PRIMARY KEY,
     invoice_number VARCHAR(50) NOT NULL,
-    product_code VARCHAR(50) NOT NULL
-        REFERENCES dim_products(product_code),
+    stock_code VARCHAR(50) NOT NULL
+        REFERENCES dim_products(stock_code),
     customer_id VARCHAR(50) NOT NULL
         REFERENCES dim_customers(customer_id),
     transaction_date TIMESTAMP NOT NULL,
@@ -25,8 +25,8 @@ CREATE TABLE IF NOT EXISTS fact_sales (
 CREATE TABLE IF NOT EXISTS fact_returns (
     return_id SERIAL PRIMARY KEY,
     invoice_number VARCHAR(50) NOT NULL,
-    product_code VARCHAR(50) NOT NULL
-        REFERENCES dim_products(product_code),
+    stock_code VARCHAR(50) NOT NULL
+        REFERENCES dim_products(stock_code),
     customer_id VARCHAR(50) NOT NULL
         REFERENCES dim_customers(customer_id),
     return_date TIMESTAMP,
