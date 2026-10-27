@@ -1,0 +1,98 @@
+
+name: prueba_desempeno_2
+
+x-airflow-common: &airflow-common
+  image: apache/airflow:2.7.2
+  environment: &airflow-environment
+    AIRFLOW__CORE__EXECUTOR: LocalExecutor
+    AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+    AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres-airflow/airflow
+    AIRFLOW_CONN_DWH_DB: postgresql://dwh_user:dwh_pass@postgres-dwh:5432/datamart_dwh
+    AIRFLOW_VAR_RAW_DATA_PATH: /opt/airflow/data/
+    _PIP_ADDITIONAL_REQUIREMENTS: pandas sqlalchemy psycopg2-binary
+  volumes:
+    - ./dags:/opt/airflow/dags
+    - ./data:/opt/airflow/data
+    - ./logs:/opt/airflow/logs
+    - ./plugins:/opt/airflow/plugins
+    - ./scripts/init_dwh.sql:/docker-entrypoint-initdb.d/init_dwh.sql
+
+services:
+  postgres-airflow:
+    image: postgres:13
+    environment:
+      POSTGRES_USER: airflow
+      POSTGRES_PASSWORD: airflow
+      POSTGRES_DB: airflow
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U airflow -d airflow"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  postgres-dwh:
+    image: postgres:13
+    environment:
+      POSTGRES_USER: dwh_user
+      POSTGRES_PASSWORD: dwh_pass
+      POSTGRES_DB: datamart_dwh
+    ports:
+      - "5434:5432"
+    volumes:
+      - ./scripts/init_dwh.sql:/docker-entrypoint-initdb.d/init_dwh.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dwh_user -d datamart_dwh"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  
+  airflow-init:
+    <<: *airflow-common
+    entrypoint: /bin/bash
+    command:
+      - -c
+      - |
+        set -e
+        airflow db migrate
+        if ! airflow users list | grep -q 'admin'; then
+          airflow users create \
+            --username admin \
+            --password admin \
+            --firstname Admin \
+            --lastname User \
+            --role Admin \
+            --email admin@example.com
+        fi
+    depends_on:
+      postgres-airflow:
+        condition: service_healthy
+    restart: "no"
+
+  airflow-webserver:
+    <<: *airflow-common
+    command: webserver
+    ports:
+      - "8081:8080"
+    depends_on:
+      postgres-airflow:
+        condition: service_healthy
+      postgres-dwh:
+        condition: service_healthy
+      airflow-init:
+        condition: service_completed_successfully
+    restart: unless-stopped
+
+  airflow-scheduler:
+    <<: *airflow-common
+    command: scheduler
+    depends_on:
+      postgres-airflow:
+        condition: service_healthy
+      postgres-dwh:
+        condition: service_healthy
+      airflow-init:
+        condition: service_completed_successfully
+    restart: unless-stopped
